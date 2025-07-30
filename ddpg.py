@@ -14,9 +14,9 @@ import torch.optim as optim
 
 # µ₀(st) = µ(st | θ_µₜ) + N
 # Where:
-    # µ₀(st): Noisy action at time t
-    # µ(st | θ_µₜ): Deterministic policy output (actor network prediction)
-    # N: Noise sampled from a Gaussian distribution (e.g., Normal(0, σ²))
+    # µ₀(st): noisy action at time t
+    # µ(st | θ_µₜ): deterministic policy output (actor network prediction)
+    # N: noise sampled from a Gaussian distribution (e.g., Normal(0, σ²))
 
 
 class OUActionNoise(object): 
@@ -46,6 +46,38 @@ class OUActionNoise(object):
         # value to either x0 (if given) or 0 (default), so the noise process has a starting point before evolving.
         self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
 
+# ReplayBuffer - used to store memory of past states.
+class ReplayBuffer(object): 
+    def __init__(self, max_size, input_shape, n_actions): # max_size = max experiences to store, n_actions = number of possible actions
+        self.mem_size = max_size # how many experiences we can store before overwriting 
+        self.mem_cntr = 0 # a counter to track how many experiences have been stored (used for indexing, an int from 0 - mem_size)
+        self.state_memory = np.zeros((self.mem_size, *input_shape)) # store past states — shape: (max_size, state_dim).
+        self.new_state_memory = np.zeros((self.mem_size, *input_shape)) # next states
+        self.action_memory = np.zeros((self.mem_size, n_actions)) # actions taken
+        self.reward_memory = np.zeros(self.mem_size) # rewards after each action
+        self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32) # stores done flags when entering terminal states
+    def store_transition(self, state, action, reward, state_, done): 
+        index = self.mem_cntr % self.mem_size # reset the index if mem_cntr > mem_size
+        self.state_memory[index] = state 
+        self.action_memory[index] = action
+        self.reward_memory[index] = reward
+        self.new_state_memory[index] = state_ 
+        self.terminal_memory[index] = 1 - done # using it in the bellman e to determine if we wanna use future Q vals
+        self.mem_cntr +=1
+    def sample_buffer(self, batch_size): 
+        max_mem = min(self.mem_cntr, self.mem_size)
+        batch = np.random.choice(max_mem, batch_size) # batch_size indices from 0 to max_mem - 1
+
+        states = self.state_memory[batch]
+        new_states = self.new_state_memory[batch]
+        actions = self.action_memory[batch]
+        rewards = self.reward_memory[batch]
+        terminal = self.terminal_memory[batch]
+
+        return states, actions, rewards, new_states, terminal
+    
+
+    
   
 
 
