@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+*.egg-info/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual Environments
+venv/
+.venv/
+env/
+*.venv
+*.env
+site-packages/
+
+# Machine Learning Files
+tmp/                # Covers tmp/ddpg/critic_ddpg
+*.pt                # PyTorch model files
+*.pth               # PyTorch model files
+checkpoints/        # Common directory for checkpoints
+data/               # Datasets
+logs/               # Training logs
+runs/               # TensorBoard or similar logs
+*.log
+*.txt
+
+# IDE/Editor Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+*.swp
+*.swo
+
+# System/Temporary Files
+*.tmp
+*.temp
+*.bak
+*.backup
+Thumbs.db
+desktop.ini
+
+# Sensitive Files
+.env
+*.key
+*.pem
+config.ini
+secrets.json
+
+# Build/Distribution
+build/
+dist/
+*.egg
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Miscellaneous
+*.cache
+*.prof
+*.coverage
+.coverage.*
