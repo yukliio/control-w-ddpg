@@ -47,3 +47,28 @@ class Agent(object):
                                      dtype=torch.float).to(self.actor.device) # add noise to mu to encourage exploration
         self.actor.train()
         return mu_prime.cpu().detach().numpy() # moves mu_prime back to cpu and converts it to numpy array to pass into openai gym later
+    
+
+    # stores a transition into replay buffer to be sampled later when training
+    def remember(self, state, action, reward, new_state, done): 
+        self.memory.store_transition(state, action, reward, new_state, done)
+
+    
+    # (NOT COMPLETE) trains the actor and critic networks using a sampled mini-batch from the replay buffer
+    def learn(self):
+        # only starts learning if there are enough experiences in a batch
+        if self.memory.mem_cntr < self.batch_size: 
+            return 
+        state, action, reward, new_state, done = self.memory.sample_buffer(self.batch_size) # sample a batch of transitions from replay buffer (state, action, reward, next_state, done)
+        
+        # each numpy array from the buffer is converted into a pytorch tensor, and sends it to the same device as the critic.
+        reward = torch.tensor(reward, dtype=torch.float).to(self.critic.device)
+        done = torch.tensor(done).to(self.critic.device)
+        action = torch.tensor(action, dtype=torch.float).to(self.critic.device)
+        state = torch.tensor(state, dtype=torch.float).to(self.critic.device)
+
+        # set networks into evaluation mode (as i said, doesn't do anything...yet)
+        self.target_actor.eval()
+        self.target_critic.eval()
+        self.critic.eval()
+
