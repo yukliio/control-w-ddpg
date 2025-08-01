@@ -21,12 +21,14 @@ class ActorNetwork(nn.Module):
         f1 = 1 / np.sqrt(self.fc1.weight.data.size()[0]) # takes num of the output neurons of the layer. output neurons as sqrt args. weight should be scaled by 1 / sqrt(fan_int) to maintiann stable variance.
         nn.init.uniform_(self.fc1.weight.data, -f1, f1) # Fills the weight matrix with random vals between -f1 and f1.
         nn.init.uniform_(self.fc1.bias.data, -f1, f1) # same for bias
+        self.bn1 = nn.LayerNorm(self.fc1_dims)
         
 
         self.fc2 = nn.Linear(fc1_dims, fc2_dims)
         f2 = 1 / np.sqrt(self.fc2.weight.data.size()[0]) # takes num of the output neurons of the layer. output neurons as sqrt args. weight should be scaled by 1 / sqrt(fan_int) to maintiann stable variance.
         nn.init.uniform_(self.fc2.weight.data, -f2, f2)
         nn.init.uniform_(self.fc2.bias.data, -f2, f2)
+        self.bn2 = nn.LayerNorm(self.fc2_dims)
 
         f3 = 0.003
         self.mu = nn.Linear(self.fc2_dims, self.n_actions)
@@ -37,7 +39,14 @@ class ActorNetwork(nn.Module):
         self.device = torch.device(('cuda:0') if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
-        # define a forward pass 
-    def forward(self, state, action): 
+    # define a forward pass 
+    def forward(self, state): 
+        x = self.fc1(state)
+        x = self.bn1(x)
+        x= F.relu(x)
+        x = self.fc2(x)
+        x = self.bn2(x)
+        x = F.relu(x)
+        action_value = torch.tanh(self.mu(x))
     
-        return state_action_value
+        return action_value
