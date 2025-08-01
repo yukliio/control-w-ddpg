@@ -43,7 +43,7 @@ class ActorNetwork(nn.Module):
     def forward(self, state): 
         x = self.fc1(state)
         x = self.bn1(x)
-        x= F.relu(x)
+        x = F.relu(x)
         x = self.fc2(x)
         x = self.bn2(x)
         x = F.relu(x)
@@ -53,7 +53,6 @@ class ActorNetwork(nn.Module):
     
     # save the actor network’s parameters to a file specified by self.checkpoint_file.
     def save_checkpoint(self): 
-
         print("----saving checkpoint-----")
         torch.save(self.state_dict(), self.checkpoint_file)
 

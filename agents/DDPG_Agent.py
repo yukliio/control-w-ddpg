@@ -37,4 +37,13 @@ class Agent(object):
         self.noise = OUActionNoise(mu=np.zeros(n_actions))
         self.update_network_parameters(tau=1) # full copy of network parameters in the beginning
 
-    
+
+    # compute action given the current state (observation)
+    def choose_action(self, observation): 
+        self.actor.eval() # doesn't do anything for now since i'm using layernorm instead of batchnorm. will test batchnorm later on, though.
+        observation = torch.tensor(observation, dtype=torch.float).to(self.actor.device) # puts input state to a tensor float + moves it to the same device as actor
+        mu = self.actor(observation).to(self.actor.device) # the action output from actor network after pass given that state (deterministic)
+        mu_prime = mu + torch.tensor(self.noise(), 
+                                     dtype=torch.float).to(self.actor.device) # add noise to mu to encourage exploration
+        self.actor.train()
+        return mu_prime.cpu().detach().numpy() # moves mu_prime back to cpu and converts it to numpy array to pass into openai gym later
