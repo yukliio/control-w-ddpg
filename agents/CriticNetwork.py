@@ -10,7 +10,7 @@ import torch.optim as optim
 class CrticNetwork(nn.Module):
     def __init__(self, beta, input_dims, fc1_dims, fc2_dims, n_actions, name, 
                  chkpnt_dir='tmp/ddpg'): 
-        super(CrticNetwork, self).__init__() # intiates everythign from the parent class (nn.Module) 
+        super(CrticNetwork, self).__init__() # intiates everything from the parent class (nn.Module) 
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims # 1st fully connected layer
         self.fc2_dims = fc2_dims # 2nd fully connected layer
@@ -21,7 +21,7 @@ class CrticNetwork(nn.Module):
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims) # input, output
         f1 = 1 / np.sqrt(self.fc1.weight.data.size()[0]) # output neurons as sqrt args. weight should be scaled by 1 / sqrt(fan_int) to maintiann stable variance.
         nn.init.uniform_(self.fc1.weight.data, -f1, f1) # Fills the weight matrix with random vals between -f1 and f1.
-        nn.init.uniform_(self.fc1.bias.data, -f1, f1) # same for bias 
+        nn.init.uniform_(self.fc1.bias.data, -f1, f1) # same for bias
         self.bn1 = nn.LayerNorm(self.fc1_dims)
 
         self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
@@ -37,7 +37,7 @@ class CrticNetwork(nn.Module):
         nn.init.uniform_(self.q.bias.data, -f3, f3)
         
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
-        self.device = torch.device('cuda' if torch.cuda.is_available(0) else 'cpu')
+        self.device = torch.device(('cuda:0') if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
     # define a forward pass 
@@ -50,7 +50,7 @@ class CrticNetwork(nn.Module):
 
         action_value = F.relu(self.action_value(action))
         state_action_value = F.relu(torch.add(state_value, action_value))
-        state_action_value = self.q(state_action_value) # produce finla q value scalar
+        state_action_value = self.q(state_action_value) # produce final q value scalar
         return state_action_value
     
 
