@@ -47,6 +47,17 @@ class ActorNetwork(nn.Module):
         x = self.fc2(x)
         x = self.bn2(x)
         x = F.relu(x)
-        action_value = torch.tanh(self.mu(x))
+        action_value = torch.tanh(self.mu(x)) # scale between [-1, 1]. later will bound it with max_action!
     
         return action_value
+    
+    # save the actor network’s parameters to a file specified by self.checkpoint_file.
+    def save_checkpoint(self): 
+
+        print("----saving checkpoint-----")
+        torch.save(self.state_dict(), self.checkpoint_file)
+
+    # load saved params from checkpoint into acotr network to restore state
+    def load_checkpoint(self): 
+        print('---loading checkpoint-----')
+        self.load_state_dict(torch.load(self.checkpoint_file))
