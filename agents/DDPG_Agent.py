@@ -72,3 +72,12 @@ class Agent(object):
         self.target_critic.eval()
         self.critic.eval()
 
+        # get values from tagret networks and critic to compute the target Q
+        target_actions = self.target_actor(new_state)
+        critic_value_ = self.target_critic(new_state)
+        critic_value = self.critic(new_state)
+
+        target = [] 
+        for j in range(self.batch_size): 
+            target.append(reward[j] + self.gamma*crti)
+
