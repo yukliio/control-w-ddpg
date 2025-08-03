@@ -77,7 +77,27 @@ class Agent(object):
         critic_value_ = self.target_critic(new_state)
         critic_value = self.critic(new_state)
 
+        # computer target Q using bellman equation
         target = [] 
         for j in range(self.batch_size): 
-            target.append(reward[j] + self.gamma*crti)
+            target.append(reward[j] + self.gamma*critic_value_[j]*done[j]) # done is already computed as 1 - done in ReplayBuffer
+        target = torch.tensor(target).to(self.critic.device)
+        target = target.view(self.batch_size, 1)
 
+        self.critic.train()
+        self.critic.optimizer.zero_grad() # clear old gradients in optimizer
+        critic_loss = F.mse_loss(target, critic_value) # compute loss between target and predicted Q
+        critic_loss.backward() 
+        self.critic.optimizer.step() # update network weights
+
+        self.critic.eval()
+        self.actor.optimizer.zero_grad()
+        mu = self.actor(state) # compute new actions using the actor (deterministic)
+        self.actor.train()
+        actor_loss = -self.critic(state, mu) # maximize Q val by taking the negative Q since we're using a minimizer 
+        actor_loss = torch.mean(actor_loss) # computes the average loss per sample in the batch.
+        actor_loss.backward()
+        self.actor.optimizer.step()
+
+        self.update_network_parameters() # TBD till tmr
+        
