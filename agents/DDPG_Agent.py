@@ -43,7 +43,7 @@ class Agent(object):
         self.actor.eval() # doesn't do anything for now since i'm using layernorm instead of batchnorm. will test batchnorm later on, though.
         observation = torch.tensor(observation, dtype=torch.float).to(self.actor.device) # puts input state to a tensor float + moves it to the same device as actor
         mu = self.actor(observation).to(self.actor.device) # the action output from actor network after pass given that state (deterministic)
-        mu_prime = mu + torch.tensor(self.noise(), 
+        mu_prime = mu + torch.tensor(self.noise, 
                                      dtype=torch.float).to(self.actor.device) # add noise to mu to encourage exploration
         self.actor.train()
         return mu_prime.cpu().detach().numpy() # moves mu_prime back to cpu and converts it to numpy array to pass into openai gym later
@@ -54,7 +54,7 @@ class Agent(object):
         self.memory.store_transition(state, action, reward, new_state, done)
 
     
-    # (NOT COMPLETE) trains the actor and critic networks using a sampled mini-batch from the replay buffer
+    # trains the actor and critic networks using a sampled mini-batch from the replay buffer
     def learn(self):
         # only starts learning if there are enough experiences in a batch
         if self.memory.mem_cntr < self.batch_size: 
@@ -99,5 +99,13 @@ class Agent(object):
         actor_loss.backward()
         self.actor.optimizer.step()
 
-        self.update_network_parameters() # TBD till tmr
-        
+        self.update_network_parameters()   
+    
+
+    # slowly update the target network paramaters with tau (very small number)
+    def update_network_parameters(self, tau=None): 
+        if tau == None: 
+            tau = self.tau # in the beginning we called tau=1 to get a full copy of the params. now we will update the params.
+
+    
+         
