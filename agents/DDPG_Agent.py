@@ -107,5 +107,16 @@ class Agent(object):
         if tau == None: 
             tau = self.tau # in the beginning we called tau=1 to get a full copy of the params. now we will update the params.
 
+        # return an iterator over the trainable parameters in the networks
+        actor_params = self.actor.named_parameters()
+        critic_params = self.critic.named_parameters()
+        target_actor_params = self.target_actor.named_parameters()
+        target_critic_params = self.target_critic.named_parameters()
+
+        # turn parameters into a dictionary to make iteration easier
+        critic_state_dict = dict(critic_params)
+        actor_state_dict = dict(actor_params)
+        target_critic_dict = dict(target_critic_params)
+        target_actor_dict = dict(target_actor_params)
     
          
