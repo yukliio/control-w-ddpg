@@ -118,5 +118,30 @@ class Agent(object):
         actor_state_dict = dict(actor_params)
         target_critic_dict = dict(target_critic_params)
         target_actor_dict = dict(target_actor_params)
+
+
+        # apply soft update to target networks 
+        for name in critic_state_dict: 
+            target_critic_dict[name] = tau * critic_state_dict[name].clone() + \
+            (1 - tau) * target_critic_dict[name].clone()
+
+        self.target_critic.load_state_dict(target_critic_dict) # load updated weights into the network
+
+        for name in target_actor_dict: 
+            target_actor_dict[name] = tau * actor_state_dict[name].clone() + \
+            (1 - tau) * target_actor_dict[name].clone()
+
+        self.target_actor.load_state_dict(target_actor_dict)
+
+    def save_models(self): 
+        self.actor.save_checkpoint()
+        self.critic.save_checkpoint()
+        self.target_actor.save_checkpoint()
+        self.target_critic.save_checkpoint()
     
-         
+    def load_models(self): 
+        self.actor.load_checkpoint()
+        self.critic.load_checkpoint()
+        self.target_actor.load_checkpoint()
+        self.target_critic.load_checkpoint()
+
